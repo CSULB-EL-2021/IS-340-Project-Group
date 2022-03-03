@@ -1,0 +1,12 @@
+version: '2.0'
+
+services:
+
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_DATABASE: 'cecs342'
+      MYSQL_ROOT_PASSWORD: 'password'
+    volumes:
+      - ./is340.sql:/docker-entrypoint-initdb.d/is340.sql
+    
