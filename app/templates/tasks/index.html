@@ -1,0 +1,72 @@
+{% extends 'layouts/application.html' %}
+
+{% block content %}
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <a href="#" class="alert-link">Success:</a> {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <h3>My Tasks</h3>
+    <br>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    {% if user %}
+                        <table class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Begin</th>
+                                <th>End</th>
+                                <th>Status</th>
+                            </tr>
+                            </thead>
+                            {% for item in items %}
+                                <TR>
+                                    <TD class="c1"><a href="/user/task/{{ item.task_id }}" class="text-warning">
+                                        {{ item.title }}
+                                    </a></TD>
+                                    <TD class="c2">{{ item.begin }}</TD>
+                                    <TD class="c3">{{ item.end }}</TD>
+                                    <TD class="c4">{{ item.status }}</TD>
+                                    <TD class="c5">
+                                        <form action="/user/task/del/{{ item.task_id }}" method="POST">
+                                            <button type="submit" class="close"
+                                                    value="{{ item.task_id }}" formmethod="POST"><span
+                                                    aria-hidden="true">&times;</span></button>
+                                        </form>
+                                    </TD>
+                                </TR>
+                            {% endfor %}
+                        </table>
+                        <div class="form-group">
+                            <form action="/user/task/add/" method="POST">
+                                <input type="text" name="title" placeholder="Task Name" required/>
+                                <input type="date" name="begin"/>
+                                <input type="date" name="end"/>
+                                <input type="text" name="status" placeholder="Status"/>
+                                <input type="submit" value="Send"/>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="offset-2 col-md-4">
+            <div class="list-group">
+                <a href="/profile" class="list-group-item list-group-item-action">My Account</a>
+                <a href="/tasks" class="list-group-item list-group-item-action active">My Tasks</a>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

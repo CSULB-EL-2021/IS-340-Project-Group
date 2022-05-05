@@ -44,7 +44,7 @@ def controller_register_create():
     if have_error(store):
         return catch_error(store)
     flash("account created")
-    return store
+    return redirect('/signin', code=301)
 
 def validation_signin(username, password):
     if is_not_empty(username) == 0 or is_not_empty(password) == 0:
@@ -65,7 +65,7 @@ def controller_signin_create():
     user = getUserByUsername(username)
     session['user_id'] = user[0]
     flash("signin successful")
-    return jsonify(result="signin successful")
+    return redirect('/', code=301)
 
 def controller_signin_index():
     return render_template("signin/index.html", title="Sign In")
@@ -73,7 +73,7 @@ def controller_signin_index():
 def controller_signout_index():
     session.clear()
     flash("signout successful")
-    return jsonify(result="signout successful")
+    return redirect('/', code=301)
 
 def api_user_index():
     user = getUserById(session.get('user_id'))
@@ -99,9 +99,16 @@ def api_task_index():
     tasks_to_json = {"tasks": []}
     if tasks is not None:
         for task in tasks:
-            task_master = {task[0]: {"title": task[1], "begin": task[2].strftime("%Y-%m-%d %T"), "end": task[3].strftime("%Y-%m-%d %T"), "status": task[4]}}
+            task_master = {"title": task[1], "begin": task[2].strftime("%Y-%m-%d %T"), "end": task[3].strftime("%Y-%m-%d %T"), "status": task[4], "task_id": task[0]}
             tasks_to_json["tasks"].append(task_master)
     return jsonify(result=tasks_to_json)
+
+def controller_tasks_index():
+    user = getUserById(session.get('user_id'))
+    user_to_json = {'user_id': user[0], 'timestamp': user[1], 'username': user[2], 'password': user[3]}
+    var = api_task_index()
+    print((json.loads(var.data))['result']['tasks'], 'ISVAR')
+    return render_template("tasks/index.html", items=(json.loads(var.data))['result']['tasks'], title="Tasks", user=user_to_json)
 
 def api_task_show(task_id):
     task = getTask(task_id)
@@ -146,15 +153,12 @@ def api_task_update(task_id):
     return updateTask(task_id, title, status, begin, end)
 
 def api_task_create():
+    print('api_task_create')
     title = request.form.get('title')
     status = request.form.get('status')
     begin = request.form.get('begin')
     end = request.form.get('end')
-    if is_not_empty(begin) == 0:
-        begin = "0000-00-00 00:00:00"
-    if is_not_empty(end) == 0:
-        end = "0000-00-00 00:00:00"
     validation = verfication_update_task(title, status, begin, end)
-    if have_error(validation):
-        return catch_error(validation)
+    print(validation, 'isVali', title, status, begin, end)
+
     return newTask(title, status, begin, end, session.get('user_id'))

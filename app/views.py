@@ -56,6 +56,11 @@ def route_profile():
 def route_api_user_task():
     return api_task_index()
 
+@app.route('/tasks', methods=['GET'])
+@m_login
+def route_controller_user_task():
+    return controller_tasks_index()
+
 @app.route('/user/task/<task_id>', methods=['GET', 'POST'])
 @m_login
 def route_api_user_task_show(task_id):
@@ -63,7 +68,7 @@ def route_api_user_task_show(task_id):
         return api_task_update(task_id)
     return api_task_show(task_id)
 
-@app.route('/user/task/add', methods=['POST'])
+@app.route('/user/task/add/', methods=['POST'])
 @m_login
 def route_api_user_task_add():
     return api_task_create()

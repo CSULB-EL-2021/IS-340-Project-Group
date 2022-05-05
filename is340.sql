@@ -16,9 +16,10 @@ use is340;
 CREATE TABLE `task` (
   `task_id` int(20) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
-  `begin` datetime DEFAULT CURRENT_TIMESTAMP,
-  `end` datetime,
+  `begin` datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  `end` datetime DEFAULT (CURRENT_TIMESTAMP + INTERVAL 1 DAY) NOT NULL,
   `status` varchar(255) DEFAULT 'not started',
+  CONSTRAINT CHECK (begin < end),
   PRIMARY KEY (`task_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

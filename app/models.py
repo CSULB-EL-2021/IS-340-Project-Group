@@ -1,5 +1,5 @@
 from config import *
-from flask import jsonify, session, flash
+from flask import jsonify, session, flash, redirect
 import pymysql as sql
 from app import app, INTERNAL_ERROR
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -7,14 +7,14 @@ from werkzeug.security import generate_password_hash, check_password_hash
 def connect_database():
 	try:
 		connect = sql.connect(host=DATABASE_HOST, unix_socket=DATABASE_SOCK,
-		user=DATABASE_USER, passwd=DATABASE_PASS, db=DATABASE_NAME)
+		user=DATABASE_USER, passwd=DATABASE_PASS, db=DATABASE_NAME, port=DATABASE_PORT)
 		return connect
 	except Exception:
 		return None
 
 def getUserByUsername(username):
-	connect = connect_database()
 	try:
+		connect = connect_database()
 		cursor = connect.cursor()
 		cursor.execute('SELECT * FROM user WHERE username LIKE %s', username)
 		result = cursor.fetchone()
@@ -94,7 +94,7 @@ def delTask(task_id):
 		return jsonify(error=INTERNAL_ERROR)
 	finally:
 		connect.close()
-	return jsonify(result="task deleted")
+	return redirect('/tasks', code=301)
 
 def updateTask(task_id, title, status, begin, end):
 	connect = connect_database()
@@ -138,17 +138,20 @@ def attachTaskToUser(task_id, user_id):
 	return True
 
 def newTask(title, status, begin, end, user_id):
+	print('Exception?')
 	connect = connect_database()
 	try:
 		cursor = connect.cursor()
-		cursor.execute('INSERT INTO task (title, status, begin, end) VALUES (%s, %s, %s, %s)',
-					   (title, status, begin, end))
+		cursor.execute('INSERT INTO task (title, status, begin, end) VALUES (%s, %s, COALESCE(%s, CURRENT_TIMESTAMP), COALESCE(%s,CURRENT_TIMESTAMP + INTERVAL 1 DAY))',
+					   (title, status, begin or None, end or None))
 		connect.commit()
 		cursor.close()
 		task = getLastTask()
 		attachTaskToUser(task[0], user_id)
-	except Exception:
+	except Exception as e:
+		print('Exception: ')
+		print(e)
 		return jsonify(error=INTERNAL_ERROR)
 	finally:
 		connect.close()
-	return jsonify(result="new task added")
+	return redirect('/tasks', code=301)
